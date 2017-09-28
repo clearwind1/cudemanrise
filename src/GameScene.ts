@@ -8,9 +8,7 @@ class GameScene extends GameUtil.BassPanel {
     private touchlayer: egret.Shape;
     private beginpointx: number;
     private beginpointy: number;
-    private gamescoreT: GameUtil.MyTextField;
-    private gamelevelT: GameUtil.MyTextField;
-    private heightscoreT: GameUtil.MyTextField;
+    private enemycontain: egret.DisplayObjectContainer;
 
     public constructor() {
         super();
@@ -22,43 +20,82 @@ class GameScene extends GameUtil.BassPanel {
         this.showbg();
         this.addtouch();
         this.createRole();
+        this.createEnemy();
         this.gameinterval();
     }
     private initdata() {
-
-        GameData._i().GameScore = 1000;
+        GameData._i().GameOver = false;
+        GameData._i().GameScore = 0;
+        GameData._i().GameLevel = 1;
         this.beginpointx = 0;
         this.beginpointy = 0;
     }
     /**
      * 显示背景
      */
+    private bgmovelayer: BgMoveLayer;
     private showbg() {
-        let offy: number = 400;
+        let offy: number = GameConfig.OFFY;
         let bgsky: egret.Shape = GameUtil.createRect(0, 0, this.mStageW, this.mStageH - offy, 1, 0xa8ebf7);
         this.addChild(bgsky);
         let bgland: egret.Shape = GameUtil.createRect(0, this.mStageH - offy, this.mStageW, offy, 1, 0xece98d);
         this.addChild(bgland);
+
+        this.bgmovelayer = new BgMoveLayer();
+        this.bgmovelayer.x = 0;
+        this.bgmovelayer.y = this.mStageH - offy;
+        this.addChild(this.bgmovelayer);
+        this.bgmovelayer.setSpeed(15);
+
+        this.addChild(GameScore._i());
+
+        this.bulletcontain = new egret.DisplayObjectContainer();
+        this.addChild(this.bulletcontain);
+
+        this.enemycontain = new egret.DisplayObjectContainer();
+        this.addChild(this.enemycontain);
+
     }
     private addtouch() {
         let touchshap: egret.Shape = GameUtil.createRect(0, 0, this.mStageW, this.mStageH, 0);
         this.addChild(touchshap);
         touchshap.$setTouchEnabled(true);
-        touchshap.addEventListener(egret.TouchEvent.TOUCH_TAP, () => {
-            let life = this.cudeman.getLife() - 1;
-            this.cudeman.setLife(life);
-         }, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_TAP, (e:egret.TouchEvent) => {
+            if (GameData._i().GameOver) {
+                return;
+            }
+            if (!this.cudeman.hitTestPoint(e.stageX, e.stageY)) {
+                this.cudeman.fire();
+            }
+            
+        }, this);
+
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.touchbegin, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.touchmove, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_END, this.touchend, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_RELEASE_OUTSIDE, this.touchout, this);
     }
-    private cudeman: CudeMan;
+    public cudeman: CudeMan;
+    public bulletcontain: egret.DisplayObjectContainer;
     private createRole() {
-        console.log('createrole');
+        //console.log('createrole');
         this.cudeman = new CudeMan();
-        this.cudeman.init({ x: this.mStageW / 2 - 50, y: this.mStageH - 150 }, 0x39cfd1, 100, 10);
+        this.cudeman.init({ x: 145, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0xd758e2, 0x39cfd1, 100, GameConfig.TOTALLIFE, true, 1);
         this.addChild(this.cudeman);
+    }
+    private createEnemy() {
+        let enemy: CudeEnemy = new CudeEnemy(15, 10);
+        enemy.init({ x: this.mStageW, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0x195042, 0x195042, 50, 1, false, 0);
+        this.enemycontain.addChild(enemy);
     }
     /**游戏定时器 */
     private gameinterval() {
         GameUtil.trace('interval');
+        let inter = egret.setInterval(() => {
+            this.createEnemy();
+        }, this, 1000);
+        this.intervalarr.push(inter);
+        this.intervalarr.push(this.bgmovelayer.start());
         //this.gameover();
     }
 
@@ -71,17 +108,47 @@ class GameScene extends GameUtil.BassPanel {
         }
     }
 
-    private touchbegin(evt: egret.TouchEvent) {
-
-        if (GameData._i().GamePause) {
+    private touchpoint;
+    private btouch: boolean = false;
+    private touchbegin(e: egret.TouchEvent) {
+        if (GameData._i().GameOver) {
             return;
         }
-        GameData._i().GamePause = true;
+        if (this.cudeman.hitTestPoint(e.stageX, e.stageY)) {
+            this.btouch = true;
+            this.touchpoint = { x: e.stageX, y: e.stageY };
+        }
+    }
+    private touchmove(e: egret.TouchEvent) {
+        if (this.btouch) {
+            this.cudeman.setPosition({ x: e.stageX - this.cudeman.getSize() / 2, y: e.stageY - this.cudeman.getSize() / 2 });
+            // if (e.stageX - (this.cudeman.x + this.cudeman.getSize() / 2) >= this.cudeman.getSize() / 2) {
+            //     this.bgmovelayer.upspeed();
+            // } else if (e.stageX - (this.cudeman.x + this.cudeman.getSize() / 2) <= -(this.cudeman.getSize() / 2)) {
+            //     this.bgmovelayer.downspeed();
+            // } else {
+            //     this.bgmovelayer.resumspeed();
+            // }
+        }
+    }
+    private touchend(e: egret.TouchEvent) {
+        if (this.btouch) {
+            this.btouch = false;
+            this.bgmovelayer.resumspeed();
+        }
+    }
+    private touchout(e: egret.TouchEvent) {
+        if (this.btouch) {
+            this.btouch = false;
+        }
     }
 
     /**游戏结束 */
     public gameover() {
         GameUtil.trace('gameover');
+        this.clearinter();
+        GameData._i().GameOver = true;
+        this.addChild(new GameOverPageShow());
         //this.gametime.stop();
         //egret.Tween.removeAllTweens();
 
@@ -101,10 +168,6 @@ class GameScene extends GameUtil.BassPanel {
     /**清除定时器 */
     private clearinter() {
         GameUtil.clearinterval(this.intervalarr);
-        // for (var i: number = 0; i < this.enemyContain.numChildren; i++) {
-        //     var enemysp: EnemySprite = <EnemySprite>this.enemyContain.getChildAt(i);
-        //     GameUtil.clearinterval(enemysp.intervalarr);
-        // }
     }
 
     private exitgame() {
@@ -138,8 +201,12 @@ class GameScene extends GameUtil.BassPanel {
         }
     }
     public restart() {
-        GameData._i().GameScore = 0;
         console.log('restart');
+        this.cudeman.setPosition({ x: 145, y: this.mStageH - GameConfig.OFFY / 2 - 50 });
+        this.cudeman.setLife(this.cudeman.getTotalLife());
+        this.bulletcontain.removeChildren();
+        this.enemycontain.removeChildren();
+        this.gameinterval();
         //this.restart();
     }
 }

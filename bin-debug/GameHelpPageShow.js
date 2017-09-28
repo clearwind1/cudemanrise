@@ -129,4 +129,3 @@ var GameHelpPageShow = (function (_super) {
     return GameHelpPageShow;
 }(Othercontainer));
 __reflect(GameHelpPageShow.prototype, "GameHelpPageShow");
-//# sourceMappingURL=GameHelpPageShow.js.map

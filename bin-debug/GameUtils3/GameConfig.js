@@ -84,8 +84,9 @@ var GameConfig = (function () {
     GameConfig.DICBH = 81;
     GameConfig.BROW = 10; //列数
     GameConfig.BCOL = 10; //行数
+    GameConfig.OFFY = 400;
+    GameConfig.TOTALLIFE = 3;
     GameConfig._instance = null;
     return GameConfig;
 }());
 __reflect(GameConfig.prototype, "GameConfig");
-//# sourceMappingURL=GameConfig.js.map

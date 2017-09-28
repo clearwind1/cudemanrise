@@ -148,4 +148,3 @@ var GameRankPageShow = (function (_super) {
     return GameRankPageShow;
 }(Othercontainer));
 __reflect(GameRankPageShow.prototype, "GameRankPageShow");
-//# sourceMappingURL=GameRankPageShow.js.map

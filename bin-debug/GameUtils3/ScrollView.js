@@ -61,4 +61,3 @@ var GameUtil;
     GameUtil.ScrollView = ScrollView;
     __reflect(ScrollView.prototype, "GameUtil.ScrollView");
 })(GameUtil || (GameUtil = {}));
-//# sourceMappingURL=ScrollView.js.map

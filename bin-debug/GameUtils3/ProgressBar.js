@@ -80,4 +80,3 @@ var GameUtil;
     GameUtil.ProgressBar = ProgressBar;
     __reflect(ProgressBar.prototype, "GameUtil.ProgressBar");
 })(GameUtil || (GameUtil = {}));
-//# sourceMappingURL=ProgressBar.js.map

@@ -112,4 +112,3 @@ var GameUtil;
     GameUtil.TipsPanel = TipsPanel;
     __reflect(TipsPanel.prototype, "GameUtil.TipsPanel");
 })(GameUtil || (GameUtil = {}));
-//# sourceMappingURL=TipsPanel.js.map

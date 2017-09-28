@@ -38,7 +38,8 @@ class Main extends egret.DisplayObjectContainer {
 
         document.title = GameConfig.GAMENAME;
         this.stage.scaleMode = egret.StageScaleMode.FIXED_NARROW;
-        this.stage.setContentSize(GameConfig.DesignWidth, GameConfig.DesignHeight);
+        this.stage.orientation = egret.OrientationMode.LANDSCAPE;
+        this.stage.setContentSize(GameConfig.DesignHeight,GameConfig.DesignWidth);
         GameUtil.GameScene.init(this.stage);
         GameUtil.GameScene.runscene(new GameUtil.LoadingPanel(this.createGameScene, this, 0, 0));
     }

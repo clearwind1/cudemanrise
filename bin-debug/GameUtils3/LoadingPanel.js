@@ -152,4 +152,3 @@ var GameUtil;
     GameUtil.LoadingPanel = LoadingPanel;
     __reflect(LoadingPanel.prototype, "GameUtil.LoadingPanel");
 })(GameUtil || (GameUtil = {}));
-//# sourceMappingURL=LoadingPanel.js.map

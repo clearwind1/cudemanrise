@@ -35,7 +35,7 @@ var GameMenus = (function (_super) {
         var posx = this.mStageW / 2;
         var posy = this.mStageH / 2;
         //菜单背景色
-        var shap = GameUtil.createRect(posx, posy, 400, this.mStageH / 2.5, 0.8, 0x69c898);
+        var shap = GameUtil.createRect(posx, posy + 30, 400, 450, 0.8, 0x69c898);
         shap.$setAnchorOffsetX(shap.width / 2);
         shap.$setAnchorOffsetY(shap.height / 2);
         this.addChild(shap);
@@ -53,39 +53,9 @@ var GameMenus = (function (_super) {
             btn.addButtonText(btnname, 30);
             this.addChild(btn);
             btn.x = posx;
-            btn.y = 50 + posy + (i - 2) * 100;
+            btn.y = 80 + posy + (i - 2) * 100;
         }
-        do {
-            if (this.showtype == DisType.NULL) {
-                this.y = 0;
-                break;
-            }
-            else if (this.showtype == DisType.TopTDown) {
-                this.y = -this.mStageH;
-                egret.Tween.get(this).to({ y: 0 }, 1500, egret.Ease.bounceOut);
-                break;
-            }
-            else if (this.showtype == DisType.DownTTop) {
-                this.y = this.mStageH;
-                egret.Tween.get(this).to({ y: 0 }, 1500, egret.Ease.bounceOut);
-                break;
-            }
-            else if (this.showtype == DisType.LeftTRight) {
-                this.x = -this.mStageW;
-                egret.Tween.get(this).to({ x: 0 }, 1500, egret.Ease.bounceOut);
-                break;
-            }
-            else if (this.showtype == DisType.RightTLeft) {
-                this.x = this.mStageW;
-                egret.Tween.get(this).to({ x: 0 }, 1500, egret.Ease.bounceOut);
-                break;
-            }
-            else if (this.showtype == DisType.Alpha) {
-                this.alpha = 0;
-                egret.Tween.get(this).to({ alpha: 1 }, 500);
-                break;
-            }
-        } while (false);
+        GameUtil.doAction(this, DisType.TopTDown);
     };
     GameMenus.prototype.startgame = function () {
         GameUtil.GameScene.runscene(new GameScene());
@@ -144,4 +114,3 @@ var GameMenus = (function (_super) {
     return GameMenus;
 }(GameUtil.BassPanel));
 __reflect(GameMenus.prototype, "GameMenus");
-//# sourceMappingURL=GameMenus.js.map

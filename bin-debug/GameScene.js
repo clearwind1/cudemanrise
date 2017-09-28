@@ -18,7 +18,9 @@ var __extends = (this && this.__extends) || (function () {
 var GameScene = (function (_super) {
     __extends(GameScene, _super);
     function GameScene() {
-        return _super.call(this) || this;
+        var _this = _super.call(this) || this;
+        _this.btouch = false;
+        return _this;
     }
     GameScene.prototype.init = function () {
         BGMPlayer._i().play(SoundName.gamebgm);
@@ -27,42 +29,71 @@ var GameScene = (function (_super) {
         this.showbg();
         this.addtouch();
         this.createRole();
+        this.createEnemy();
         this.gameinterval();
     };
     GameScene.prototype.initdata = function () {
-        GameData._i().GameScore = 1000;
+        GameData._i().GameOver = false;
+        GameData._i().GameScore = 0;
+        GameData._i().GameLevel = 1;
         this.beginpointx = 0;
         this.beginpointy = 0;
     };
-    /**
-     * 显示背景
-     */
     GameScene.prototype.showbg = function () {
-        var offy = 400;
+        var offy = GameConfig.OFFY;
         var bgsky = GameUtil.createRect(0, 0, this.mStageW, this.mStageH - offy, 1, 0xa8ebf7);
         this.addChild(bgsky);
         var bgland = GameUtil.createRect(0, this.mStageH - offy, this.mStageW, offy, 1, 0xece98d);
         this.addChild(bgland);
+        this.bgmovelayer = new BgMoveLayer();
+        this.bgmovelayer.x = 0;
+        this.bgmovelayer.y = this.mStageH - offy;
+        this.addChild(this.bgmovelayer);
+        this.bgmovelayer.setSpeed(15);
+        this.addChild(GameScore._i());
+        this.bulletcontain = new egret.DisplayObjectContainer();
+        this.addChild(this.bulletcontain);
+        this.enemycontain = new egret.DisplayObjectContainer();
+        this.addChild(this.enemycontain);
     };
     GameScene.prototype.addtouch = function () {
         var _this = this;
         var touchshap = GameUtil.createRect(0, 0, this.mStageW, this.mStageH, 0);
         this.addChild(touchshap);
         touchshap.$setTouchEnabled(true);
-        touchshap.addEventListener(egret.TouchEvent.TOUCH_TAP, function () {
-            var life = _this.cudeman.getLife() - 1;
-            _this.cudeman.setLife(life);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_TAP, function (e) {
+            if (GameData._i().GameOver) {
+                return;
+            }
+            if (!_this.cudeman.hitTestPoint(e.stageX, e.stageY)) {
+                _this.cudeman.fire();
+            }
         }, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.touchbegin, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_MOVE, this.touchmove, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_END, this.touchend, this);
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_RELEASE_OUTSIDE, this.touchout, this);
     };
     GameScene.prototype.createRole = function () {
-        console.log('createrole');
+        //console.log('createrole');
         this.cudeman = new CudeMan();
-        this.cudeman.init({ x: this.mStageW / 2 - 50, y: this.mStageH - 150 }, 0x39cfd1, 100, 10);
+        this.cudeman.init({ x: 145, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0xd758e2, 0x39cfd1, 100, GameConfig.TOTALLIFE, true, 1);
         this.addChild(this.cudeman);
+    };
+    GameScene.prototype.createEnemy = function () {
+        var enemy = new CudeEnemy(15, 10);
+        enemy.init({ x: this.mStageW, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0x195042, 0x195042, 50, 1, false, 0);
+        this.enemycontain.addChild(enemy);
     };
     /**游戏定时器 */
     GameScene.prototype.gameinterval = function () {
+        var _this = this;
         GameUtil.trace('interval');
+        var inter = egret.setInterval(function () {
+            _this.createEnemy();
+        }, this, 1000);
+        this.intervalarr.push(inter);
+        this.intervalarr.push(this.bgmovelayer.start());
         //this.gameover();
     };
     GameScene.prototype.checkgameover = function () {
@@ -71,15 +102,44 @@ var GameScene = (function (_super) {
             this.gameover();
         }
     };
-    GameScene.prototype.touchbegin = function (evt) {
-        if (GameData._i().GamePause) {
+    GameScene.prototype.touchbegin = function (e) {
+        if (GameData._i().GameOver) {
             return;
         }
-        GameData._i().GamePause = true;
+        if (this.cudeman.hitTestPoint(e.stageX, e.stageY)) {
+            this.btouch = true;
+            this.touchpoint = { x: e.stageX, y: e.stageY };
+        }
+    };
+    GameScene.prototype.touchmove = function (e) {
+        if (this.btouch) {
+            this.cudeman.setPosition({ x: e.stageX - this.cudeman.getSize() / 2, y: e.stageY - this.cudeman.getSize() / 2 });
+            // if (e.stageX - (this.cudeman.x + this.cudeman.getSize() / 2) >= this.cudeman.getSize() / 2) {
+            //     this.bgmovelayer.upspeed();
+            // } else if (e.stageX - (this.cudeman.x + this.cudeman.getSize() / 2) <= -(this.cudeman.getSize() / 2)) {
+            //     this.bgmovelayer.downspeed();
+            // } else {
+            //     this.bgmovelayer.resumspeed();
+            // }
+        }
+    };
+    GameScene.prototype.touchend = function (e) {
+        if (this.btouch) {
+            this.btouch = false;
+            this.bgmovelayer.resumspeed();
+        }
+    };
+    GameScene.prototype.touchout = function (e) {
+        if (this.btouch) {
+            this.btouch = false;
+        }
     };
     /**游戏结束 */
     GameScene.prototype.gameover = function () {
         GameUtil.trace('gameover');
+        this.clearinter();
+        GameData._i().GameOver = true;
+        this.addChild(new GameOverPageShow());
         //this.gametime.stop();
         //egret.Tween.removeAllTweens();
     };
@@ -96,10 +156,6 @@ var GameScene = (function (_super) {
     /**清除定时器 */
     GameScene.prototype.clearinter = function () {
         GameUtil.clearinterval(this.intervalarr);
-        // for (var i: number = 0; i < this.enemyContain.numChildren; i++) {
-        //     var enemysp: EnemySprite = <EnemySprite>this.enemyContain.getChildAt(i);
-        //     GameUtil.clearinterval(enemysp.intervalarr);
-        // }
     };
     GameScene.prototype.exitgame = function () {
         GameUtil.GameScene.runscene(new StartGameScene());
@@ -130,11 +186,14 @@ var GameScene = (function (_super) {
         }
     };
     GameScene.prototype.restart = function () {
-        GameData._i().GameScore = 0;
         console.log('restart');
+        this.cudeman.setPosition({ x: 145, y: this.mStageH - GameConfig.OFFY / 2 - 50 });
+        this.cudeman.setLife(this.cudeman.getTotalLife());
+        this.bulletcontain.removeChildren();
+        this.enemycontain.removeChildren();
+        this.gameinterval();
         //this.restart();
     };
     return GameScene;
 }(GameUtil.BassPanel));
 __reflect(GameScene.prototype, "GameScene");
-//# sourceMappingURL=GameScene.js.map

@@ -49,4 +49,3 @@ var GameUtil;
     GameUtil.GetResByany = GetResByany;
     __reflect(GetResByany.prototype, "GameUtil.GetResByany");
 })(GameUtil || (GameUtil = {}));
-//# sourceMappingURL=GetResByany.js.map

@@ -49,6 +49,8 @@ class GameConfig {
     public static DICBH = 81;
     public static BROW = 10;         //列数
     public static BCOL = 10;         //行数
+    public static OFFY = 400;
+    public static TOTALLIFE = 3;
     /**开发游戏配置结束 */
 
     public constructor() {

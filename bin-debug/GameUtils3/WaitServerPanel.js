@@ -44,4 +44,3 @@ var GameUtil;
     GameUtil.WaitServerPanel = WaitServerPanel;
     __reflect(WaitServerPanel.prototype, "GameUtil.WaitServerPanel");
 })(GameUtil || (GameUtil = {}));
-//# sourceMappingURL=WaitServerPanel.js.map

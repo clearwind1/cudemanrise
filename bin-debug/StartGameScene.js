@@ -45,7 +45,7 @@ var StartGameScene = (function (_super) {
         this.addChild(shap);
         var posx = this.mStageW / 2;
         var posy = this.mStageH / 2;
-        var gametitletext = new GameUtil.MyTextField(posx, 200, 100, 0.5, 0.5);
+        var gametitletext = new GameUtil.MyTextField(posx, 100, 100, 0.5, 0.5);
         gametitletext.setText(GameConfig.GAMENAME);
         gametitletext.italic = true;
         gametitletext.textColor = 0x75bfea;
@@ -89,4 +89,3 @@ var StartGameScene = (function (_super) {
     return StartGameScene;
 }(GameUtil.BassPanel));
 __reflect(StartGameScene.prototype, "StartGameScene");
-//# sourceMappingURL=StartGameScene.js.map

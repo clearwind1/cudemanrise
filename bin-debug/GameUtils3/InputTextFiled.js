@@ -69,4 +69,3 @@ var GameUtil;
     GameUtil.InputTextFiled = InputTextFiled;
     __reflect(InputTextFiled.prototype, "GameUtil.InputTextFiled");
 })(GameUtil || (GameUtil = {}));
-//# sourceMappingURL=InputTextFiled.js.map

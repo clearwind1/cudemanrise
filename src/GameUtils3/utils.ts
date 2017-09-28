@@ -265,4 +265,33 @@ module GameUtil {
         return rect;
     }
 
+    export function doAction(objtarget, showtype, delay = 1500, pot = 0) {
+        do {
+            if (showtype == DisType.NULL) {
+                objtarget.y = 0;
+                break;
+            } else if (showtype == DisType.TopTDown) {
+                objtarget.y = -GameConfig.getSH();
+                egret.Tween.get(objtarget).to({ y: pot }, delay, egret.Ease.bounceOut);
+                break;
+            } else if (showtype == DisType.DownTTop) {
+                objtarget.y = GameConfig.getSH();
+                egret.Tween.get(objtarget).to({ y: pot }, delay, egret.Ease.bounceOut);
+                break;
+            } else if (showtype == DisType.LeftTRight) {
+                objtarget.x = -GameConfig.getSW();
+                egret.Tween.get(objtarget).to({ x: pot }, delay, egret.Ease.bounceOut);
+                break;
+            } else if (showtype == DisType.RightTLeft) {
+                objtarget.x = GameConfig.getSW();
+                egret.Tween.get(objtarget).to({ x: pot }, delay, egret.Ease.bounceOut);
+                break;
+            } else if (showtype == DisType.Alpha) {
+                objtarget.alpha = 0;
+                egret.Tween.get(objtarget).to({ alpha: 1 }, delay);
+                break;
+            }
+        } while (false);
+    }
+
 }

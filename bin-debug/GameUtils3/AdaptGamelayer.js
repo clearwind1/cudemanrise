@@ -50,4 +50,3 @@ var AdaptGamelayer = (function (_super) {
     return AdaptGamelayer;
 }(GameUtil.BassPanel));
 __reflect(AdaptGamelayer.prototype, "AdaptGamelayer");
-//# sourceMappingURL=AdaptGamelayer.js.map
