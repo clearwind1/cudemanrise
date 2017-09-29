@@ -93,6 +93,10 @@ class CudeSprite extends egret.Sprite {
 		this.soildcude.graphics.drawRect(1, 1, this.size * (this.currlife / this.totallife), this.size);
 		this.soildcude.graphics.endFill();
 	}
+
+	public light() {
+		GameUtil.light(this.roundframe, this.color);
+	}
 }
 
 /**
@@ -103,9 +107,11 @@ class CudeMan extends CudeSprite {
 	private interval;
 	public constructor() {
 		super();
-		this.interval = egret.setInterval(this.checklifeare, this, 500);
 	}
 	//检测生命区域
+	public start() {
+		this.interval = GameUtil.setInterval(this.checklifeare, this, 500);
+	}
 	public checklifeare() {
 		if (GameData._i().GameOver) {
 			egret.clearInterval(this.interval);
@@ -126,7 +132,7 @@ class CudeMan extends CudeSprite {
 	public setTotalLife(totalLife) {
 		this.totallife = totalLife;
 	}
-	public getTotalLife(): number{
+	public getTotalLife(): number {
 		return this.totallife;
 	}
 	public offLife(power) {
@@ -151,7 +157,8 @@ class CudeMan extends CudeSprite {
 		(<GameScene>this.parent).bulletcontain.addChild(bullet);
 	}
 	private die() {
-		console.log('life====', this.currlife);
+		//console.log('life====', this.currlife);
+		this.benterdanger = false;
 		(<GameScene>this.parent).gameover();
 	}
 }
@@ -163,14 +170,16 @@ class CudeEnemy extends CudeSprite {
 	private inter: number;
 	private speed: number;
 	private score: number;
-	public constructor(speed, score) {
+	public constructor(type) {
 		super();
-		this.speed = speed;
-		this.score = score;
+		let speed = [15, 18, 25, 30];
+		let score = [10, 15, 35, 80];
+		this.speed = speed[type];
+		this.score = score[type];
 		this.run();
 	}
 	private run() {
-		this.inter = egret.setInterval(() => {
+		this.inter = GameUtil.setInterval(() => {
 			if (GameData._i().GameOver) {
 				egret.clearInterval(this.inter);
 				return;
@@ -180,13 +189,14 @@ class CudeEnemy extends CudeSprite {
 			let gamescene: GameScene = <GameScene>(this.parent.parent);
 			for (let i: number = 0; i < gamescene.bulletcontain.numChildren; i++) {
 				let bullet: BulletSprite = <BulletSprite>gamescene.bulletcontain.getChildAt(i);
-				if (GameUtil.getrect(bullet).intersects(GameUtil.getrect(this,0,this.size/2))) {
+				if (this && GameUtil.getrect(bullet).intersects(GameUtil.getrect(this, this.size / 2, this.size / 2))) {
 					this.offlife(bullet.getPower());
 					bullet.die();
 					break;
 				}
 			}
-			if (GameUtil.getrect(gamescene.cudeman).intersects(GameUtil.getrect(this))) {
+			let cudemanrect: egret.Rectangle = new egret.Rectangle(gamescene.cudeman.x, gamescene.cudeman.y, gamescene.cudeman.getSize(), gamescene.cudeman.getSize());
+			if (this && cudemanrect.intersects(GameUtil.getrect(this, this.size / 2, this.size / 2))) {
 				let life = gamescene.cudeman.getLife() - 1;
 				gamescene.cudeman.offLife(1);
 				this.die();

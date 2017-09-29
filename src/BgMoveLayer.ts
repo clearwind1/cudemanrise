@@ -45,7 +45,7 @@ class BgMoveLayer extends egret.Sprite {
 		}
 	}
 	public start(): number {
-		return egret.setInterval(this.move, this, 100);
+		return GameUtil.setInterval(this.move, this, 100);
 	}
 	public upspeed() {
 		if (this.bnormalspeed) {

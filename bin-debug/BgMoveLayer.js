@@ -53,7 +53,7 @@ var BgMoveLayer = (function (_super) {
         }
     };
     BgMoveLayer.prototype.start = function () {
-        return egret.setInterval(this.move, this, 100);
+        return GameUtil.setInterval(this.move, this, 100);
     };
     BgMoveLayer.prototype.upspeed = function () {
         if (this.bnormalspeed) {

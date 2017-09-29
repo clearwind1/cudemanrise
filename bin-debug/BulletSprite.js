@@ -35,7 +35,7 @@ var BulletSprite = (function (_super) {
     };
     BulletSprite.prototype.start = function () {
         var _this = this;
-        this.inter = egret.setInterval(function () {
+        this.inter = GameUtil.setInterval(function () {
             if (GameData._i().GameOver) {
                 egret.clearInterval(_this.inter);
                 return;

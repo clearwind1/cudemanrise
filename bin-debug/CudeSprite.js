@@ -97,6 +97,9 @@ var CudeSprite = (function (_super) {
         this.soildcude.graphics.drawRect(1, 1, this.size * (this.currlife / this.totallife), this.size);
         this.soildcude.graphics.endFill();
     };
+    CudeSprite.prototype.light = function () {
+        GameUtil.light(this.roundframe, this.color);
+    };
     return CudeSprite;
 }(egret.Sprite));
 __reflect(CudeSprite.prototype, "CudeSprite");
@@ -108,10 +111,12 @@ var CudeMan = (function (_super) {
     function CudeMan() {
         var _this = _super.call(this) || this;
         _this.benterdanger = false;
-        _this.interval = egret.setInterval(_this.checklifeare, _this, 500);
         return _this;
     }
     //检测生命区域
+    CudeMan.prototype.start = function () {
+        this.interval = GameUtil.setInterval(this.checklifeare, this, 500);
+    };
     CudeMan.prototype.checklifeare = function () {
         if (GameData._i().GameOver) {
             egret.clearInterval(this.interval);
@@ -158,7 +163,8 @@ var CudeMan = (function (_super) {
         this.parent.bulletcontain.addChild(bullet);
     };
     CudeMan.prototype.die = function () {
-        console.log('life====', this.currlife);
+        //console.log('life====', this.currlife);
+        this.benterdanger = false;
         this.parent.gameover();
     };
     return CudeMan;
@@ -169,16 +175,18 @@ __reflect(CudeMan.prototype, "CudeMan");
  */
 var CudeEnemy = (function (_super) {
     __extends(CudeEnemy, _super);
-    function CudeEnemy(speed, score) {
+    function CudeEnemy(type) {
         var _this = _super.call(this) || this;
-        _this.speed = speed;
-        _this.score = score;
+        var speed = [15, 18, 25, 30];
+        var score = [10, 15, 35, 80];
+        _this.speed = speed[type];
+        _this.score = score[type];
         _this.run();
         return _this;
     }
     CudeEnemy.prototype.run = function () {
         var _this = this;
-        this.inter = egret.setInterval(function () {
+        this.inter = GameUtil.setInterval(function () {
             if (GameData._i().GameOver) {
                 egret.clearInterval(_this.inter);
                 return;
@@ -187,13 +195,14 @@ var CudeEnemy = (function (_super) {
             var gamescene = (_this.parent.parent);
             for (var i = 0; i < gamescene.bulletcontain.numChildren; i++) {
                 var bullet = gamescene.bulletcontain.getChildAt(i);
-                if (GameUtil.getrect(bullet).intersects(GameUtil.getrect(_this, 0, _this.size / 2))) {
+                if (_this && GameUtil.getrect(bullet).intersects(GameUtil.getrect(_this, _this.size / 2, _this.size / 2))) {
                     _this.offlife(bullet.getPower());
                     bullet.die();
                     break;
                 }
             }
-            if (GameUtil.getrect(gamescene.cudeman).intersects(GameUtil.getrect(_this))) {
+            var cudemanrect = new egret.Rectangle(gamescene.cudeman.x, gamescene.cudeman.y, gamescene.cudeman.getSize(), gamescene.cudeman.getSize());
+            if (_this && cudemanrect.intersects(GameUtil.getrect(_this, _this.size / 2, _this.size / 2))) {
                 var life = gamescene.cudeman.getLife() - 1;
                 gamescene.cudeman.offLife(1);
                 _this.die();

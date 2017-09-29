@@ -24,7 +24,7 @@ class BulletSprite extends egret.Shape{
 		this.graphics.endFill();
 	}
 	private start() {
-		this.inter = egret.setInterval(() => {
+		this.inter = GameUtil.setInterval(() => {
 			if (GameData._i().GameOver) {
 				egret.clearInterval(this.inter);
 				return;

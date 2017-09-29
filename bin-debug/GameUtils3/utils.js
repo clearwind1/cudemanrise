@@ -207,8 +207,8 @@ var GameUtil;
     GameUtil.absposy = absposy;
     function trace() {
         var optionalParams = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            optionalParams[_i] = arguments[_i];
+        for (var _a = 0; _a < arguments.length; _a++) {
+            optionalParams[_a] = arguments[_a];
         }
         optionalParams[0] = "[DebugLog]" + optionalParams[0];
         console.log.apply(console, optionalParams);
@@ -269,10 +269,12 @@ var GameUtil;
         request.send();
     }
     GameUtil.getText = getText;
+    //拔电话
     function Telnumber(num) {
         window.location.href = "tel://" + num;
     }
     GameUtil.Telnumber = Telnumber;
+    //检查数组里是否有该元素
     function checkChild(element, arr) {
         if (arr.indexOf(element) != -1) {
             return true;
@@ -280,6 +282,7 @@ var GameUtil;
         return false;
     }
     GameUtil.checkChild = checkChild;
+    //获得该物体位置上的包围盒
     function getrect(obj, offx, offy) {
         if (offx === void 0) { offx = 0; }
         if (offy === void 0) { offy = 0; }
@@ -289,6 +292,33 @@ var GameUtil;
         return rect;
     }
     GameUtil.getrect = getrect;
+    //使对象变灰
+    function gray(sp) {
+        var colorMatrix = [
+            0.3, 0.6, 0, 0, 0,
+            0.3, 0.6, 0, 0, 0,
+            0.3, 0.6, 0, 0, 0,
+            0, 0, 0, 1, 0
+        ];
+        var colorFlilter = new egret.ColorMatrixFilter(colorMatrix);
+        sp.filters = [colorFlilter];
+    }
+    GameUtil.gray = gray;
+    //使对象发光
+    function light(sp, color) {
+        //var color: number = 0x33CCFF;        /// 光晕的颜色，十六进制，不包含透明度
+        var alpha = 0.8; /// 光晕的颜色透明度，是对 color 参数的透明度设定。有效值为 0.0 到 1.0。例如，0.8 设置透明度值为 80%。
+        var blurX = 35; /// 水平模糊量。有效值为 0 到 255.0（浮点）
+        var blurY = 35; /// 垂直模糊量。有效值为 0 到 255.0（浮点）
+        var strength = 2; /// 压印的强度，值越大，压印的颜色越深，而且发光与背景之间的对比度也越强。有效值为 0 到 255。暂未实现
+        var quality = 3 /* HIGH */; /// 应用滤镜的次数，建议用 BitmapFilterQuality 类的常量来体现
+        var inner = false; /// 指定发光是否为内侧发光，暂未实现
+        var knockout = false; /// 指定对象是否具有挖空效果，暂未实现
+        var glowFilter = new egret.GlowFilter(color, alpha, blurX, blurY, strength, quality, inner, knockout);
+        sp.filters = [glowFilter];
+    }
+    GameUtil.light = light;
+    //做缓动动画
     function doAction(objtarget, showtype, delay, pot) {
         if (delay === void 0) { delay = 1500; }
         if (pot === void 0) { pot = 0; }
@@ -325,4 +355,13 @@ var GameUtil;
         } while (false);
     }
     GameUtil.doAction = doAction;
+    function setInterval(fun, objtarget, delay) {
+        return egret.setInterval(function () {
+            if (GameData._i().GamePause) {
+                return;
+            }
+            fun.apply(objtarget);
+        }, objtarget, delay);
+    }
+    GameUtil.setInterval = setInterval;
 })(GameUtil || (GameUtil = {}));

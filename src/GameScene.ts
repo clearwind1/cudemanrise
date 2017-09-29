@@ -15,12 +15,16 @@ class GameScene extends GameUtil.BassPanel {
     }
     public init() {
         BGMPlayer._i().play(SoundName.gamebgm);
+        this.getenemyinfo = [];
         this.intervalarr = [];
+        this.gametime = 0;
+        this.readconfig();
         this.initdata();
         this.showbg();
         this.addtouch();
         this.createRole();
         this.createEnemy();
+        this.bindkeyboard();
         this.gameinterval();
     }
     private initdata() {
@@ -60,14 +64,14 @@ class GameScene extends GameUtil.BassPanel {
         let touchshap: egret.Shape = GameUtil.createRect(0, 0, this.mStageW, this.mStageH, 0);
         this.addChild(touchshap);
         touchshap.$setTouchEnabled(true);
-        touchshap.addEventListener(egret.TouchEvent.TOUCH_TAP, (e:egret.TouchEvent) => {
+        touchshap.addEventListener(egret.TouchEvent.TOUCH_TAP, (e: egret.TouchEvent) => {
             if (GameData._i().GameOver) {
                 return;
             }
             if (!this.cudeman.hitTestPoint(e.stageX, e.stageY)) {
                 this.cudeman.fire();
             }
-            
+
         }, this);
 
         touchshap.addEventListener(egret.TouchEvent.TOUCH_BEGIN, this.touchbegin, this);
@@ -82,20 +86,60 @@ class GameScene extends GameUtil.BassPanel {
         this.cudeman = new CudeMan();
         this.cudeman.init({ x: 145, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0xd758e2, 0x39cfd1, 100, GameConfig.TOTALLIFE, true, 1);
         this.addChild(this.cudeman);
+        this.cudeman.light();        
     }
+    private gametime: number;
     private createEnemy() {
-        let enemy: CudeEnemy = new CudeEnemy(15, 10);
-        enemy.init({ x: this.mStageW, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0x195042, 0x195042, 50, 1, false, 0);
-        this.enemycontain.addChild(enemy);
+        this.gametime++;
+        //console.log('gametime====', this.gametime);
+        for (let i: number = 0; i < this.getenemyinfo.length; i++) {
+
+            if (this.gametime >= this.getenemyinfo[i].starttime && this.gametime < this.getenemyinfo[i].endtime) {
+                //console.log('this.getenemyinfo[i].starttime====', this.getenemyinfo[i].starttime);
+                let enemy: CudeEnemy = new CudeEnemy(this.getenemyinfo[i].type);
+                //console.log('this.getenemyinfo[i].type====', this.getenemyinfo[i].type);
+                let posx = this.mStageW + (this.getenemyinfo[i].posx - 1) * 80;
+                let posy = this.mStageH - GameConfig.OFFY / 2 - 50 + (this.getenemyinfo[i].posy - 1) * 80;
+                //console.log('posx====', posx,'\nposy=====',posy);
+                enemy.init({ x: posx, y: posy }, 0x195042, 0x195042, 50, 1, false, 0);
+                this.enemycontain.addChild(enemy);
+            }
+        }
+    }
+    private bindkeyboard() {
+        KeyBoard._i().bindfun(this, this.keyup, KEYCODE.UP);
+        KeyBoard._i().bindfun(this, this.keydown, KEYCODE.DOWN);
+        KeyBoard._i().bindfun(this, this.keyleft, KEYCODE.LEFT);
+        KeyBoard._i().bindfun(this, this.keyright, KEYCODE.RIGHT);
+        KeyBoard._i().bindfun(this, this.keyspace, KEYCODE.SPACE);
+    }
+    private getenemyinfo: any[];
+    private readconfig() {
+        let config = (RES.getRes('enemyconfig_json').level)[GameData._i().GameLevel - 1];
+        for (let i: number = 0; i < config.config.length; i++) {
+            let enemyconfig;
+
+            let itype = config.config[i].type;
+            let starttime = Number(config.config[i].time.split("-")[0]);
+            let endtime = Number(config.config[i].time.split("-")[1]);
+            let pos = config.config[i].pos.split(",");
+            for (let j: number = 0; j < pos.length; j++) {
+                let posx = Number(pos[j].split("-")[0]);
+                let posy = Number(pos[j].split("-")[1]);
+
+                enemyconfig = { type: itype, starttime: starttime, endtime: endtime, posx: posx, posy: posy };
+                this.getenemyinfo.push(enemyconfig);
+            }
+        }
+
     }
     /**游戏定时器 */
     private gameinterval() {
         GameUtil.trace('interval');
-        let inter = egret.setInterval(() => {
-            this.createEnemy();
-        }, this, 1000);
+        let inter = GameUtil.setInterval(this.createEnemy, this, 1000);
         this.intervalarr.push(inter);
         this.intervalarr.push(this.bgmovelayer.start());
+        this.cudeman.start();
         //this.gameover();
     }
 
@@ -208,5 +252,22 @@ class GameScene extends GameUtil.BassPanel {
         this.enemycontain.removeChildren();
         this.gameinterval();
         //this.restart();
+    }
+
+    private keydown() {
+        this.cudeman.setPosition({ x: this.cudeman.x, y: this.cudeman.y += 5 });
+    }
+    private keyleft() {
+        this.cudeman.setPosition({ x: this.cudeman.x -= 5, y: this.cudeman.y });
+    }
+    private keyright() {
+        this.cudeman.setPosition({ x: this.cudeman.x += 5, y: this.cudeman.y });
+    }
+    private keyup() {
+        this.cudeman.setPosition({ x: this.cudeman.x, y: this.cudeman.y -= 5 });
+    }
+    private keyspace() {
+        //this.cudeman.fire();
+        GameData._i().GamePause = !GameData._i().GamePause;
     }
 }

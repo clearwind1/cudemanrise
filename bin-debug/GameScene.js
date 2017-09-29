@@ -24,12 +24,16 @@ var GameScene = (function (_super) {
     }
     GameScene.prototype.init = function () {
         BGMPlayer._i().play(SoundName.gamebgm);
+        this.getenemyinfo = [];
         this.intervalarr = [];
+        this.gametime = 0;
+        this.readconfig();
         this.initdata();
         this.showbg();
         this.addtouch();
         this.createRole();
         this.createEnemy();
+        this.bindkeyboard();
         this.gameinterval();
     };
     GameScene.prototype.initdata = function () {
@@ -79,21 +83,54 @@ var GameScene = (function (_super) {
         this.cudeman = new CudeMan();
         this.cudeman.init({ x: 145, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0xd758e2, 0x39cfd1, 100, GameConfig.TOTALLIFE, true, 1);
         this.addChild(this.cudeman);
+        this.cudeman.light();
     };
     GameScene.prototype.createEnemy = function () {
-        var enemy = new CudeEnemy(15, 10);
-        enemy.init({ x: this.mStageW, y: this.mStageH - GameConfig.OFFY / 2 - 50 }, 0x195042, 0x195042, 50, 1, false, 0);
-        this.enemycontain.addChild(enemy);
+        this.gametime++;
+        //console.log('gametime====', this.gametime);
+        for (var i = 0; i < this.getenemyinfo.length; i++) {
+            if (this.gametime >= this.getenemyinfo[i].starttime && this.gametime < this.getenemyinfo[i].endtime) {
+                //console.log('this.getenemyinfo[i].starttime====', this.getenemyinfo[i].starttime);
+                var enemy = new CudeEnemy(this.getenemyinfo[i].type);
+                //console.log('this.getenemyinfo[i].type====', this.getenemyinfo[i].type);
+                var posx = this.mStageW + (this.getenemyinfo[i].posx - 1) * 80;
+                var posy = this.mStageH - GameConfig.OFFY / 2 - 50 + (this.getenemyinfo[i].posy - 1) * 80;
+                //console.log('posx====', posx,'\nposy=====',posy);
+                enemy.init({ x: posx, y: posy }, 0x195042, 0x195042, 50, 1, false, 0);
+                this.enemycontain.addChild(enemy);
+            }
+        }
+    };
+    GameScene.prototype.bindkeyboard = function () {
+        KeyBoard._i().bindfun(this, this.keyup, KEYCODE.UP);
+        KeyBoard._i().bindfun(this, this.keydown, KEYCODE.DOWN);
+        KeyBoard._i().bindfun(this, this.keyleft, KEYCODE.LEFT);
+        KeyBoard._i().bindfun(this, this.keyright, KEYCODE.RIGHT);
+        KeyBoard._i().bindfun(this, this.keyspace, KEYCODE.SPACE);
+    };
+    GameScene.prototype.readconfig = function () {
+        var config = (RES.getRes('enemyconfig_json').level)[GameData._i().GameLevel - 1];
+        for (var i = 0; i < config.config.length; i++) {
+            var enemyconfig = void 0;
+            var itype = config.config[i].type;
+            var starttime = Number(config.config[i].time.split("-")[0]);
+            var endtime = Number(config.config[i].time.split("-")[1]);
+            var pos = config.config[i].pos.split(",");
+            for (var j = 0; j < pos.length; j++) {
+                var posx = Number(pos[j].split("-")[0]);
+                var posy = Number(pos[j].split("-")[1]);
+                enemyconfig = { type: itype, starttime: starttime, endtime: endtime, posx: posx, posy: posy };
+                this.getenemyinfo.push(enemyconfig);
+            }
+        }
     };
     /**游戏定时器 */
     GameScene.prototype.gameinterval = function () {
-        var _this = this;
         GameUtil.trace('interval');
-        var inter = egret.setInterval(function () {
-            _this.createEnemy();
-        }, this, 1000);
+        var inter = GameUtil.setInterval(this.createEnemy, this, 1000);
         this.intervalarr.push(inter);
         this.intervalarr.push(this.bgmovelayer.start());
+        this.cudeman.start();
         //this.gameover();
     };
     GameScene.prototype.checkgameover = function () {
@@ -193,6 +230,22 @@ var GameScene = (function (_super) {
         this.enemycontain.removeChildren();
         this.gameinterval();
         //this.restart();
+    };
+    GameScene.prototype.keydown = function () {
+        this.cudeman.setPosition({ x: this.cudeman.x, y: this.cudeman.y += 5 });
+    };
+    GameScene.prototype.keyleft = function () {
+        this.cudeman.setPosition({ x: this.cudeman.x -= 5, y: this.cudeman.y });
+    };
+    GameScene.prototype.keyright = function () {
+        this.cudeman.setPosition({ x: this.cudeman.x += 5, y: this.cudeman.y });
+    };
+    GameScene.prototype.keyup = function () {
+        this.cudeman.setPosition({ x: this.cudeman.x, y: this.cudeman.y -= 5 });
+    };
+    GameScene.prototype.keyspace = function () {
+        //this.cudeman.fire();
+        GameData._i().GamePause = !GameData._i().GamePause;
     };
     return GameScene;
 }(GameUtil.BassPanel));

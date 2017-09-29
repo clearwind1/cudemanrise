@@ -26,9 +26,12 @@ class Timercontrol {
     {
         this.timer.start();
     }
+    public pause() {
+        this.timer.stop(); 
+    }
     public stop()
     {
-        this.timer.stop();
+        this.timer.reset();
     }
     /**
      * 回调函数

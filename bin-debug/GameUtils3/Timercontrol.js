@@ -25,8 +25,11 @@ var Timercontrol = (function () {
     Timercontrol.prototype.start = function () {
         this.timer.start();
     };
-    Timercontrol.prototype.stop = function () {
+    Timercontrol.prototype.pause = function () {
         this.timer.stop();
+    };
+    Timercontrol.prototype.stop = function () {
+        this.timer.reset();
     };
     /**
      * 回调函数
